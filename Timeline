@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JB MEDIA — The Frequency</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background-color: #080808 !important; background: #080808 !important; color: #ffffff !important; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; min-height: 100vh; }
+
+.opening { background-color: #080808; max-width: 780px; margin: 0 auto; padding: 90px 48px 70px; }
+.label { font-size: 10px; font-weight: 500; letter-spacing: 0.38em; text-transform: uppercase; color: #ffffff; margin-bottom: 52px; }
+.opening-border { border-left: 1px solid #444; padding-left: 36px; margin-bottom: 52px; }
+.headline-small { font-size: 13px; font-weight: 400; letter-spacing: 0.06em; line-height: 1.6; color: #ffffff; margin-bottom: 28px; }
+.headline-large { font-size: clamp(20px, 2.8vw, 30px); font-weight: 300; line-height: 1.75; color: #ffffff; letter-spacing: -0.01em; }
+.since { font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: #ffffff; padding-left: 36px; }
+
+.scroll-hint { background-color: #080808; text-align: center; font-size: 9px; font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; color: #888; padding: 0 0 20px; }
+
+.timeline-wrapper { background-color: #080808; width: 100%; overflow-x: auto; padding: 60px 0 40px; -webkit-overflow-scrolling: touch; }
+.timeline-track { display: flex; align-items: flex-start; min-width: max-content; padding: 0 60px; position: relative; }
+.timeline-track::before { content: ‘’; position: absolute; top: 16px; left: 60px; right: 60px; height: 1px; background: #333; }
+
+.node { position: relative; display: flex; flex-direction: column; align-items: center; margin-right: 80px; cursor: pointer; width: 140px; }
+.node:last-child { margin-right: 0; }
+.node-dot { width: 10px; height: 10px; border-radius: 50%; background: #555; border: 2px solid #080808; position: relative; z-index: 1; transition: background 0.3s ease, transform 0.3s ease; flex-shrink: 0; }
+.node.active .node-dot { background: #e8d0a8; transform: scale(1.4); }
+.node-year { font-size: 10px; font-weight: 500; letter-spacing: 0.22em; color: #888; margin-top: 14px; transition: color 0.3s ease; }
+.node.active .node-year { color: #e8d0a8; }
+.node-title { font-size: 11px; font-weight: 400; letter-spacing: 0.06em; color: #ffffff; margin-top: 8px; text-align: center; line-height: 1.5; }
+.node:hover .node-dot { background: #999; }
+.node:hover .node-year { color: #cccccc; }
+
+.panel-spacer { height: 0; transition: height 0.38s cubic-bezier(0.22, 1, 0.36, 1); }
+.panel-spacer.active { height: 52vh; }
+
+.panel { position: fixed; bottom: 0; left: 0; right: 0; background: #0d0d0d; border-top: 1px solid #222; padding: 36px 48px 44px; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1); z-index: 100; max-height: 52vh; overflow-y: auto; }
+.panel.open { transform: translateY(0); }
+.panel-inner { display: grid; grid-template-columns: 80px 1fr; gap: 0 48px; max-width: 780px; margin: 0 auto; }
+.panel-year { font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: #e8d0a8; padding-top: 6px; }
+.panel-content { display: flex; flex-direction: column; }
+.panel-title { font-size: 22px; font-weight: 400; letter-spacing: 0.02em; color: #ffffff; margin-bottom: 6px; }
+.panel-tagline { font-size: 13px; font-weight: 300; font-style: italic; color: #888; letter-spacing: 0.04em; margin-bottom: 20px; }
+.panel-body-wrap { flex: 1; }
+.panel-text { font-size: 16px; font-weight: 300; line-height: 1.95; color: #ffffff; margin-bottom: 0; max-width: 600px; }
+.panel-close-text { font-size: 14px; font-weight: 400; font-style: italic; color: #e8d0a8; line-height: 1.7; max-width: 600px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #222; }
+.panel-dismiss { position: absolute; top: 28px; right: 44px; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #444; cursor: pointer; transition: color 0.3s ease; background: none; border: none; padding: 4px; }
+.panel-dismiss:hover { color: #e8d0a8; }
+
+.close-section { max-width: 780px; margin: 0 auto; padding: 72px 48px 110px; border-top: 1px solid #1a1a1a; }
+.close-inner { padding-left: 48px; border-left: 1px solid #333; margin-bottom: 64px; }
+.close-line { font-size: 16px; font-weight: 300; letter-spacing: 0.01em; line-height: 2.1; color: #ffffff; }
+.close-line + .close-line { margin-top: 4px; }
+.close-gap { margin-top: 32px; }
+.close-sig { font-size: 10px; font-weight: 500; letter-spacing: 0.36em; text-transform: uppercase; color: #e8d0a8; text-align: center; line-height: 2.8; }
+
+@media (max-width: 640px) {
+.opening { padding: 60px 28px 50px; }
+.opening-border { padding-left: 20px; }
+.since { padding-left: 20px; }
+.panel { padding: 36px 28px 44px; }
+.panel-inner { grid-template-columns: 1fr; gap: 16px; }
+.panel-year { padding-top: 0; }
+.close-section { padding: 52px 28px 80px; }
+.close-inner { padding-left: 24px; }
+.panel-dismiss { right: 24px; top: 20px; }
+}
+</style>
+
+</head>
+<body style="background:#080808 !important;">
+
+<div class="opening">
+  <div class="label">JB MEDIA — The Frequency</div>
+  <div class="opening-border">
+    <p class="headline-small">Some describe the room. We build it.</p>
+    <p class="headline-large">Since 1992, we have been inside the moments that define culture — before they are moments, before they have names.<br><br>Where the street finds the atelier. Where the underground and the legacy recognise each other. We perceive the frequency before it has a name — and then we build the rooms for it to thrive.</p>
+  </div>
+  <p class="since">This is our vocation since 1992</p>
+</div>
+
+<div class="scroll-hint">Scroll to explore →</div>
+
+<div class="timeline-wrapper">
+  <div class="timeline-track">
+
+```
+<div class="node" id="n1992a" onclick="open_panel(this,'1992','The Founding','The conviction before the market.','1992. Milano. The most prestigious advertising market in the world — and the most turned inward. Luxury spoke only to itself. The same titles, the same pages, the same plans, season after season. Outside those rooms, the world was already changing fast — new cultures forming, new frequencies rising, new tribes emerging from the underground. The mainstream had yet to hear them.','JB MEDIA was founded on that conviction. We answered before the question arrived.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1992</div>
+  <div class="node-title">The Founding</div>
+</div>
+
+<div class="node" id="n1992b" onclick="open_panel(this,'1992','OUT Magazine','The forbidden room.','The queer market was considered untouchable. No luxury media plan anywhere in the world had ever opened that door. We pre-launched OUT Magazine from issue zero and walked in anyway.','The market came on board. The world caught up thirty years later.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1992</div>
+  <div class="node-title">OUT Magazine</div>
+</div>
+
+<div class="node" id="n1993" onclick="open_panel(this,'1993','Dazed','Behind glass, until we unleashed it.','1993. Milano. The luxury market studied the underground the way a museum studies an artifact — with great interest, from behind glass. Then we walked in with Dazed.','We showed them the way in.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1993</div>
+  <div class="node-title">Dazed</div>
+</div>
+
+<div class="node" id="n1994" onclick="open_panel(this,'1994','Purple','The inner sanctum.','Paris. 1992. Olivier Zahm founded Purple not as a magazine — as a frequency most fashion could not yet hear. In 1994, we brought it to Milano. The frequency did the rest.','The heretic became the oracle.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1994</div>
+  <div class="node-title">Purple</div>
+</div>
+
+<div class="node" id="n1995" onclick="open_panel(this,'1995','WIRED','Fashion was allergic to technology. We brought the antidote.','The Italian fashion houses were still standing around fax machines. We brought WIRED to Italy — and rather than present the future, we built it inside a room. At Corso Como 10, technology and fashion were already integrated, already alive, already touching, before the brands had language for what they were experiencing. They didn\u2019t read about digital transformation that afternoon.','They stood inside it.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1995</div>
+  <div class="node-title">WIRED</div>
+</div>
+
+<div class="node" id="n1996" onclick="open_panel(this,'1996','VIBE','Two worlds. One room.','1996. Milano. Men\u2019s Fashion Week. We brought Tupac Shakur to Italy through VIBE Magazine — and for one week, two worlds that had been circling each other for years finally collided in the same room. He opened the Romeo Gigli show. He walked Valentino, Dolce \u0026 Gabbana. In Florence, he performed California Love at Pitti \u2014 his first and only performance outside America.','Wikipedia calls it a turning point in fashion history. We call it Tuesday.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1996</div>
+  <div class="node-title">VIBE</div>
+</div>
+
+<div class="node" id="n1997" onclick="open_panel(this,'1997','Quincy Jones','Some tables change everything.','1997. Milano. JB MEDIA hosted a soul food brunch and put Quincy Jones at the table with every major designer in the city — and Ligabue, and Jovanotti. People who had never shared a room, let alone a table. What happened inside stayed inside. What came out of it became history.','When Quincy Jones is at the table, the room becomes history.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1997</div>
+  <div class="node-title">Quincy Jones</div>
+</div>
+
+<div class="node" id="n1998" onclick="open_panel(this,'1998','NEST','The extraordinary has no address.','We brought NEST to Italy — Joe Holtzman\u2019s radical quarterly that collided the igloo with the palazzo, the prison cell with the couture atelier. While the industry genuflected at minimalism, Holtzman believed an igloo and a Park Avenue penthouse deserved equal attention. 26 issues. Collected today. Impossible to find.','The distinction between high and low was irrelevant. Only the exceptional mattered.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1998</div>
+  <div class="node-title">NEST</div>
+</div>
+
+<div class="node" id="n1999" onclick="open_panel(this,'1999','Num\u00e9ro','Before the first issue existed.','Paris. 1998. Babeth Djian had a vision that had no pages yet. No covers. No circulation figures. No proof of anything except the certainty of someone who has never needed permission to be right. We recognised it immediately.','No one had seen it yet. And still, Italy had already said s\u00ec.')">
+  <div class="node-dot"></div>
+  <div class="node-year">1999</div>
+  <div class="node-title">Numéro</div>
+</div>
+
+<div class="node" id="n2001" onclick="open_panel(this,'2001','Another Magazine','The conversation we opened became a category.','Jefferson Hack recognised a need the industry had yet to name. We opened the conversation that created a new category — the biannual. A format that would save the soul of independent luxury publishing. Every serious independent magazine eventually followed.','The conversation we opened became a category.')">
+  <div class="node-dot"></div>
+  <div class="node-year">2001</div>
+  <div class="node-title">Another Magazine</div>
+</div>
+
+<div class="node" id="n2012" onclick="open_panel(this,'2012','The Gucci Fiat 500','Three voices. One collision.','Gucci and Fiat came to market with a collaboration. Four bids were issued. JB MEDIA won three — Dazed, Purple, and Nowness. Three original films. Three directors. Three distinct cultural voices, each one a collision where Italian automotive heritage and Italian fashion heritage walked in from opposite doors and recognised each other.','3,000+ pre-orders worldwide. Sold out in the US before summer. A 2013 encore by demand.')">
+  <div class="node-dot"></div>
+  <div class="node-year">2012</div>
+  <div class="node-title">The Gucci Fiat 500</div>
+</div>
+
+<div class="node" id="n2016" onclick="open_panel(this,'2016','25 Years','The constellation was already forming.','Twenty-five years of collisions. Twenty-five years of rooms built before the industry knew it needed them.','25 years ahead.')">
+  <div class="node-dot"></div>
+  <div class="node-year">2016</div>
+  <div class="node-title">25 Years</div>
+</div>
+```
+
+  </div>
+</div>
+
+<div class="panel-spacer" id="spacer"></div>
+
+<div class="panel" id="panel">
+  <button class="panel-dismiss" onclick="close_panel()">Close ×</button>
+  <div class="panel-inner">
+    <div class="panel-year" id="panel-year"></div>
+    <div class="panel-content">
+      <div class="panel-title" id="panel-title"></div>
+      <p class="panel-tagline" id="panel-tagline"></p>
+      <div class="panel-body-wrap">
+        <p class="panel-text" id="panel-text"></p>
+      </div>
+      <p class="panel-close-text" id="panel-close"></p>
+    </div>
+  </div>
+</div>
+
+<div class="close-section">
+  <div class="close-inner">
+    <p class="close-line">Sustainability. Inclusivity. Cultural intelligence.</p>
+    <p class="close-line close-gap">The world spent decades finding the words. We never needed them.</p>
+    <p class="close-line">We were not early. The timing was always exactly right.</p>
+  </div>
+  <p class="close-sig">JB MEDIA / Cultural Intelligence / Since 1992</p>
+</div>
+
+<script>
+let current = null;
+
+function open_panel(node, year, title, tagline, body, gravel) {
+  if (current && current !== node) {
+    current.classList.remove('active');
+  }
+  if (current === node) {
+    close_panel();
+    return;
+  }
+  current = node;
+  node.classList.add('active');
+  document.getElementById('panel-year').textContent = year;
+  document.getElementById('panel-title').textContent = title;
+  document.getElementById('panel-tagline').textContent = tagline;
+  document.getElementById('panel-text').textContent = body;
+  document.getElementById('panel-close').textContent = gravel;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('spacer').classList.add('active');
+}
+
+function close_panel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('spacer').classList.remove('active');
+  if (current) {
+    current.classList.remove('active');
+    current = null;
+  }
+}
+</script>
+
+</body>
+</html>
+
